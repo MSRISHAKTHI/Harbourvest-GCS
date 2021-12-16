@@ -1,0 +1,4 @@
+INDEX VERSION 1.131+C:\Git VATT Premium\.metadata\.plugins\org.eclipse.jdt.core
+281309507.index
+2943829899.index
+1283825410.index

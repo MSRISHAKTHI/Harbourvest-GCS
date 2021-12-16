@@ -1,0 +1,111 @@
+package com.vuram.automation.BusinessReusableComponents;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+
+import com.vuram.automation.Constants.Constants;
+import com.vuram.automation.utility.VATT;
+
+public class SendEmail extends VATT
+{
+	
+	public static String RequestID;
+	
+	public void SendEmailToLH(String RequestType,String SendEmailReqInstitution,String ClientName,String FundsName,String FunctionalTeam,String RecommendedPerson,String EmailSubject,String EmailBody) throws Exception
+	{
+flow.SendAutoMail(Constants.doc25, "doc25", EmailSubject, "srishakthim@vuram.com", "Clientservice_stage2@harbourvest.com", "mageshkumarj@vuram.com", EmailBody, "tpcpviobywkejcbo");
+flow.Timeout(460000);
+flow.OpenURL(Constants.Appurl);
+flow.LoginwithUserNameandPassword(Constants.ClientServiceUserUn, Constants.ClientServiceUserPw);
+flow.OpenURL(Constants.ClientserviceURL);
+flow.WaitforProgressBar();
+flow.ClickWebElement("Inbox");
+flow.WaitforProgressBar();
+flow.ExplicitWaitforSpecificText("Request Owner");
+flow.VerifyTextPresentinUI(EmailSubject);
+flow.WaitforProgressBar();
+flow.ClickLinkBasedonName(EmailSubject);
+flow.WaitforProgressBar();
+flow.Timeout(5000);
+flow.ClickSVGIconBasedonToolTipText("Initiate a request");
+flow.WaitforProgressBar();
+flow.ExplicitWaitforSpecificText("Requestor Name & Email");
+
+String H3Tag=owebdriver.findElement(By.xpath(".//h3")).getText();
+String Tag[]=H3Tag.split(" - ");
+RequestID=Tag[1];
+flow.StepInfoWithoutScreenshot("Request ID - "+RequestID);
+flow.MultiSelectDropDown("Request Type(s) *", RequestType);
+flow.PopulateTextFieldBasedonPlaceholderText("Briefly describe about the request", Constants.Description);
+flow.EnterKey("Description (Optional)");
+flow.WaitforProgressBar();
+flow.Timeout(6000);
+owebdriver.findElement(By.xpath("//a[text()=' Click here to search for Requestor Institution']")).click();
+flow.WaitforProgressBar();
+flow.Timeout(2000);
+flow.SetWebText(SendEmailReqInstitution, "Name");
+flow.EnterKey("Name");
+flow.WaitforProgressBar();
+flow.ClickLinkBasedonName(SendEmailReqInstitution);
+flow.WaitforProgressBar();
+flow.ClickButtonBasedonName("Yes");
+flow.WaitforProgressBar();
+flow.Timeout(5000);
+flow.WaitforProgressBar();
+flow.Timeout(3000);
+flow.MultiSelectDropDown("Fund(s)",FundsName);
+flow.PopulateTextFieldBasedonInstructionText("Character Count 0/4000", RequestID+" - Test");
+flow.SelectCheckboxBasedonIndex(2);
+flow.SelectValuefromPickeronGrid(FunctionalTeam, 1, 1, 1);
+flow.ExplicitWaitforSpecificText("Select a functional team to select Recommended Person");
+flow.SelectValuefromPickeronGrid(RecommendedPerson, 1, 1, 2);
+flow.SetWebTextforGrid("FTComments", 1, 1, 4);
+flow.UploadFileBasedonIndex(Constants.IRdoc, 1);
+flow.ExplicitWaitforSpecificText(FunctionalTeam);
+flow.Timeout(2000);
+flow.ClickButtonBasedonName("Respond to Client");
+flow.VerifyTextPresentinUI(Constants.IRFuncTeamConfirmationMsg);
+flow.ClickButtonBasedonName("YES");
+
+/* ********Responding to Client********** */
+flow.ExplicitWaitforSpecificText("To Recipients (HV Users)");
+flow.WaitforProgressBar();
+flow.Timeout(5000);
+
+WebElement element=owebdriver.findElement(By.xpath("(.//iframe)[1]"));
+owebdriver.switchTo().frame(element);
+flow.ExplicitWait(By.xpath(".//div[@class='ql-editor ql-blank']//div"));
+owebdriver.findElement(By.xpath(".//div[@class='ql-editor ql-blank']//div")).sendKeys(EmailBody);
+owebdriver.switchTo().defaultContent();
+flow.WaitforProgressBar();
+flow.UploadFileBasedonIndex(Constants.RespondToClientDoc, 1);
+flow.Timeout(2000);
+flow.ClickButtonBasedonName("SEND");
+flow.VerifyTextPresentinUI(Constants.RespondToClientConfirmationMsg);
+flow.ClickButtonBasedonName("YES");
+flow.WaitforProgressBar();
+flow.Timeout(4000);
+flow.ExplicitWaitforSpecificText("Unread");
+
+/* ************Records Verification********** */
+flow.ClickWebElement("CLIENT SERVICE REQUESTS");
+flow.ExplicitWaitforSpecificText("Show only recurring requests");
+((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");
+flow.ClearDropDownField("Select Filter Set(s)");
+flow.SetWebText(RequestID, "Search");
+flow.EnterKey("Search");
+flow.ExplicitWaitforSpecificText(RequestID);
+flow.VerifyGridText(1, 1, 4,ClientName);
+flow.VerifyGridText(1, 1, 5,"Re: "+EmailSubject);
+
+flow.VerifyGridText(1, 1, 10, "Pending Functional Team Response");
+flow.ClickLinkBasedonName(RequestID);
+flow.SwitchtoRecentChildWindow();
+flow.ExplicitWaitforSpecificText("Summary");
+flow.VerifyUIFieldElements("Requestor Institution",SendEmailReqInstitution);
+flow.VerifyUIFieldElements("Client Name", ClientName);
+
+	
+	
+	}}

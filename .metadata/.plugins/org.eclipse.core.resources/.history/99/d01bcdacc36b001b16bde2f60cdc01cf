@@ -1,0 +1,138 @@
+package com.vuram.automation.Businessflows;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+
+import com.vuram.automation.BusinessReusableComponents.InitiateRequest;
+import com.vuram.automation.BusinessReusableComponents.AssignTaskFromAccControllingUser;
+import com.vuram.automation.BusinessReusableComponents.CompleteRequestFulfillment;
+import com.vuram.automation.BusinessReusableComponents.CompleteApproveRequestTask;
+import com.vuram.automation.Constants.Constants;
+import com.vuram.automation.utility.VATT;
+
+public class TC021_InitiateRequest_Accounting_AssignTaskOwner_Complete_CompleteApproval_RespondToClient_AcknowledgeTheReviewResponse extends VATT{
+	InitiateRequest request=new InitiateRequest ();
+	AssignTaskFromAccControllingUser assign= new AssignTaskFromAccControllingUser();
+	CompleteRequestFulfillment CompleteRF= new CompleteRequestFulfillment();
+	CompleteApproveRequestTask CompleteAR= new CompleteApproveRequestTask();
+	
+	public static String RequestID;
+@Parameters({"RequestType","ClientName", "FundsName", "FunctionalTeam", "RecommendedPerson","EmailSubject","EmailBody"})
+@Test(priority=0)
+	public void InitiateRequest_AssignTaskOwner_CompleteRequestFlfillment_CompleteApprovalTask(String RequestType,String ClientName,String FundsName,String FunctionalTeam,String RecommendedPerson,String EmailSubject,String EmailBody) throws Exception
+	{
+	flow.StepInfoWithoutScreenshot("Initiate the request user as CSA user");
+	request.CreateRequest(RequestType, ClientName, FundsName, FunctionalTeam, RecommendedPerson, EmailSubject, EmailBody);
+	flow.Logout();
+	flow.StepInfoWithoutScreenshot("Assign the task to the respective owner");
+	assign.AssignTask();
+	flow.StepInfoWithoutScreenshot("Complete the request fullfillment task");
+	CompleteRF.CompleteRFT(RequestType, ClientName, FundsName, FunctionalTeam, RecommendedPerson, EmailSubject, EmailBody);	
+	flow.StepInfoWithoutScreenshot("Complete the approval task");
+	CompleteAR.CompleteART(RequestType, ClientName, FundsName, FunctionalTeam, RecommendedPerson, EmailSubject, EmailBody);	
+	}
+@Parameters({"RequestType","ClientName", "FundsName", "FunctionalTeam", "RecommendedPerson","EmailSubject","EmailBody"})
+@Test(priority=1)
+	public void AcknowledgetheReviewResponsetaskAndVerify(String RequestType,String ClientName,String FundsName,String FunctionalTeam,String RecommendedPerson,String EmailSubject,String EmailBody) throws Exception
+	{
+	flow.StepInfoWithoutScreenshot("Acknowledge the review response task and verify it");
+	/*Review response from Accounting Team Task*/
+	flow.OpenURL(Constants.Appurl);
+	flow.LoginwithUserNameandPassword(Constants.ClientServiceUserUn, Constants.ClientServiceUserPw);
+	flow.OpenURL(Constants.ClientserviceURL);
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	flow.ExplicitWaitforSpecificText("Show Only Response Email Tasks");
+	((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");
+	flow.ClearDropDownField("Select Filter Set(s)");
+	flow.ClearField("Search");
+	flow.SetWebText(InitiateRequest.RequestID, "Search");
+	flow.EnterKey("Search");
+	flow.Timeout(2000);
+	flow.ClickGridWebElementUsingText(1,"Review Response from Accounting Team - "+InitiateRequest.RequestID);
+	flow.PopulateTextFieldBasedonPlaceholderText("Enter your comments", "Acknowledge");
+	flow.UploadFileBasedonIndex(Constants.AfromReviewResponsefromAccountingManagerTeamdoc, 1);
+	flow.Timeout(2000);
+	flow.SelectCheckboxBasedonIndex(2);
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	flow.ClickButtonBasedonName("Acknowledge");
+	flow.ClickButtonBasedonName("YES");
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	
+	 /* ********Responding to Client********** */
+	flow.ExplicitWaitforSpecificText("To Recipients (HV Users)");
+	flow.SetWebTextBasedonIndex(1, "false", Constants.ClientserviceToaddress);
+	flow.SetWebTextBasedonIndex(3, "false", EmailSubject);
+	flow.WaitforProgressBar();
+	flow.Timeout(5000);
+	
+	WebElement element=owebdriver.findElement(By.xpath("(.//iframe)[1]"));
+	owebdriver.switchTo().frame(element);
+	flow.ExplicitWait(By.xpath(".//div[@class='ql-editor ql-blank']//div"));
+	owebdriver.findElement(By.xpath(".//div[@class='ql-editor ql-blank']//div")).sendKeys(EmailBody);
+	owebdriver.switchTo().defaultContent();
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	flow.UploadFileBasedonIndex(Constants.RespondToClientDoc, 1);
+	flow.Timeout(2000);
+	flow.ClickButtonBasedonName("SEND");
+	flow.WaitforProgressBar();
+	flow.ClickButtonBasedonName("YES");
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	flow.ExplicitWaitforSpecificText("Show Only Response Email Tasks");
+	
+	/*Verification in Records*/
+	flow.ClickWebElement("CLIENT SERVICE REQUESTS");
+	flow.WaitforProgressBar();
+	flow.Timeout(5000);
+	flow.Refresh();
+	flow.WaitforProgressBar();
+	flow.Timeout(5000);
+	flow.Refresh();
+	flow.ExplicitWaitforSpecificText("Show only recurring requests");
+	((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");
+	flow.ClearDropDownField("Select Filter Set(s)");
+	flow.ClearField("Search");
+	flow.SetWebText(InitiateRequest.RequestID, "Search");
+	flow.EnterKey("Search");
+	flow.Timeout(2000);
+	flow.VerifyGridText(1, 1, 10, "Pending Request Owner Response");		
+	flow.ClickGridWebElementUsingText(1, InitiateRequest.RequestID);
+	flow.SwitchtoRecentChildWindow();
+	flow.WaitforProgressBar();
+	flow.Timeout(3000);
+	flow.ExplicitWaitforSpecificText("Summary");
+	
+	/*Fulfillment Details tab*/
+	flow.ClickWebElement("Fulfillment Details");
+	flow.StepInfoWithoutScreenshot("Verification in the Fulfillment Details dashboard");
+	flow.ExplicitWaitforSpecificText("Final Response");
+	flow.VerifyGridText(1, 1, 1, FunctionalTeam);
+	flow.VerifyGridText(1, 1, 11, Constants.FTStatus3);
+	
+	/*Email*/
+	flow.ClickWebElement("Emails");
+	flow.StepInfoWithoutScreenshot("Verification in the Emails dashboard");
+	flow.ExplicitWaitforPartialText(EmailSubject);
+	flow.VerifyPartialTextPresentinUI(EmailSubject);
+	
+	/*Documents*/
+	flow.ClickWebElement("Documents");
+	flow.StepInfoWithoutScreenshot("Verification in the Documents dashboard");
+	flow.ExplicitWaitforSpecificText("Category");
+	flow.VerifyTextPresentinGrid(1, "doc7");
+	
+	/*Audit History*/
+	flow.ClickWebElement("Audit History");
+	flow.StepInfoWithoutScreenshot("Verification in the Audit History dashboard");
+	flow.ExplicitWaitforSpecificText("Activity History");
+	flow.VerifyGridText(1, 1, 1, "Prepare Response Email");
+	
+	flow.Logout();
+	}}

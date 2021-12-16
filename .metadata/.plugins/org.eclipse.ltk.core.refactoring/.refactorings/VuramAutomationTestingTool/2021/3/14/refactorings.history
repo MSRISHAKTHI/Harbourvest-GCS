@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;SendEmail.java&apos; to &apos;gcsclientservice-masterTest/src/com.vuram.automation.BusinessReusableComponents&apos;&#x0D;&#x0A;- Original project: &apos;gcsclientservice-master&apos;&#x0D;&#x0A;- Destination element: &apos;gcsclientservice-masterTest/src/com.vuram.automation.BusinessReusableComponents&apos;&#x0D;&#x0A;- Original element: &apos;com.vuram.automation.BusinessReusableComponents.SendEmail.java&apos;" description="Copy compilation unit" destination="=gcsclientservice-masterTest/src&lt;com.vuram.automation.BusinessReusableComponents" element1="/src&lt;com.vuram.automation.BusinessReusableComponents{SendEmail.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1617100479067" units="1" version="1.0"/>
+</session>

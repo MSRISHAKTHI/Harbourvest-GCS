@@ -1,0 +1,165 @@
+package com.vuram.automation.Businessflows;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+
+import com.vuram.automation.BusinessReusableComponents.CompleteRequestFulfillmentTaskCompliance;
+import com.vuram.automation.BusinessReusableComponents.InitiateRequest;
+import com.vuram.automation.BusinessReusableComponents.InitiateRequestwithFTCompliance;
+import com.vuram.automation.Constants.Constants;
+import com.vuram.automation.utility.VATT;
+public class TC29InboxPage extends VATT{
+CompleteRequestFulfillmentTaskCompliance CompleteRFTC= new CompleteRequestFulfillmentTaskCompliance();
+
+
+public static String RequestID;
+@Parameters({"RequestType", "ClientName", "FundsName", "FunctionalTeam", "RecommendedPerson", "EmailSubject", "EmailBody"})
+@Test
+public void InboxPage(String RequestType,String RequestorInstitution, String ClientName,String FundsName,String FunctionalTeam,String FunctionalTeam2, String RecommendedPerson,String EmailSubject,String EmailBody) throws Exception
+	
+
+{
+		 flow.OpenURL(Constants.Appurl);
+	     flow.LoginwithUserNameandPassword(Constants.ClientServiceUserUn, Constants.ClientServiceUserPw);
+		 flow.OpenURL(Constants.ClientserviceURL);		
+		flow.ExplicitWaitforSpecificText("Show Only Response Email Tasks");
+		
+		/* ************ Inbox page Verification********** */
+		flow.ClickWebElement("Inbox");
+		flow.ExplicitWaitforSpecificText("Client Service Inbox");
+		flow.ClickLinkBasedonName("Unread");
+		flow.VerifyTextNotPresentinUI(EmailSubject);
+		flow.ClickLinkBasedonName(EmailSubject);
+		flow.VerifyTextNotPresentinUI(EmailBody);
+		flow.ClickLinkBasedonName("Show Attachment");
+		flow.VerifyTextPresentinUI(Constants.D1);
+		flow.ClickWebElement("Initiate");
+		String H3Tag=owebdriver.findElement(By.xpath(".//h3")).getText();
+		String Tag[]=H3Tag.split(" - ");
+		RequestID=Tag[1];
+		flow.StepInfoWithoutScreenshot("Request ID - "+RequestID);
+		flow.MultiSelectDropDown("Request Type(s) *", RequestType);
+		flow.ClickLinkBasedonName("Click here to search for Requestor Institution");
+		flow.SetWebText(RequestorInstitution, "Name");
+		flow.EnterKey("Name");
+		flow.ExplicitWaitforSpecificText("Click on link to select the Institution");
+		flow.ClickGridWebElementUsingText(1, RequestorInstitution);
+		flow.ClickButtonBasedonName("Yes");	
+		flow.PopulateTextFieldBasedonPlaceholderText("Briefly describe about the request", Constants.Description);
+		flow.SetWebText(ClientName, "Name");
+		flow.EnterKey("Name");
+		flow.ExplicitWaitforSpecificText("Click on link to select the Institution");
+		flow.ClickGridWebElementUsingText(1, ClientName);
+		flow.ExplicitWaitforSpecificText("Client Service Associate");
+		flow.MultiSelectDropDown("Fund(s)",FundsName);
+		flow.PopulateTextFieldBasedonInstructionText("Character Count 0/4000", RequestID+" - Test");
+		flow.SelectCheckboxBasedonIndex(2);
+		flow.SelectValuefromPickeronGrid(FunctionalTeam, 1, 1, 1);
+		flow.ExplicitWaitforSpecificText("Select a functional team to select Recommended Person");
+		flow.SetWebTextforGrid("FT Comments", 1, 1, 4);
+		flow.UploadFileBasedonIndex(Constants.IRdoc, 1);
+		flow.Timeout(3000);
+		flow.ClickButtonBasedonName("Respond and Retain Review");
+		flow.VerifyTextPresentinUI("The task(s) will be assigned to the selected functional team(s) and you will be redirected to prepare response screen and this task will be retained. Would you like to continue??");
+		flow.ClickButtonBasedonName("YES");
+		
+		   /* ********Responding to Client********** */
+				flow.ExplicitWaitforSpecificText("To Recipients (HV Users)");
+				flow.SetWebTextBasedonIndex(1, "false", Constants.ClientserviceToaddress);
+				flow.SetWebTextBasedonIndex(4, "false", EmailBody);
+				flow.UploadFileBasedonIndex(Constants.RespondToClientDoc, 1);
+				flow.Timeout(2000);
+				flow.ClickButtonBasedonName("SEND");
+				flow.VerifyTextPresentinUI(Constants.RespondToClientConfirmationMsg);
+				flow.ClickButtonBasedonName("YES");
+				flow.ExplicitWaitforSpecificText("Show Only Response Email Tasks");
+				
+					
+				flow.ClickWebElement("CLIENT SERVICE REQUESTS");
+				flow.ExplicitWaitforSpecificText("Show only recurring requests");
+				((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");
+				flow.ClearDropDownField("Select Filter Set(s)");
+				flow.ClearField("Search");
+				flow.SetWebText(RequestID, "Search");
+				flow.EnterKey("Search");
+				flow.Timeout(2000);
+				flow.ClickGridWebElementUsingText(1, RequestID);
+				((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");	
+				flow.ExplicitWaitforSpecificText("Summary");
+				
+				/*Active tasks*/
+				flow.ClickWebElement("Active Tasks");
+				flow.ExplicitWaitforSpecificText("Other Active Tasks");
+				flow.ClickGridWebElementUsingText(1,"Request Review - "+RequestID);		
+				((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");					
+				flow.ExplicitWaitforSpecificText("Respond to Client Sub");
+				flow.ClickButtonBasedonName("Submit");
+				flow.ExplicitWaitforSpecificText("Other Active Tasks");
+				flow.Logout();
+				
+	    CompleteRFTC.CompleteRFTCompliance(RequestType, ClientName, FundsName, FunctionalTeam,FunctionalTeam2, RecommendedPerson, EmailSubject, EmailBody);					
+		flow.OpenURL(Constants.Appurl);
+		flow.LoginwithUserNameandPassword(Constants.ClientServiceUserUn, Constants.ClientServiceUserPw);
+		flow.OpenURL(Constants.ClientserviceURL);
+		flow.ClearDropDownField("Select Filter Set(s)");
+		flow.ClearField("Search");
+		flow.SetWebText(InitiateRequestwithFTCompliance.RequestID, "Search");
+		flow.EnterKey("Search");
+		flow.Timeout(2000);
+		flow.ClickGridWebElementUsingText(1, "Review Response from Compliance Team - "+InitiateRequestwithFTCompliance.RequestID);
+		flow.PopulateTextFieldBasedonInstructionText("Character Count 0/4000", "CSA Review Response Acknowledge");
+		flow.UploadFile(Constants.AfromReviewResponsefromcomplianceTeamdoc);
+		flow.Timeout(2000);
+		flow.ClickButtonBasedonName("Acknowledge");
+		flow.ClickButtonBasedonName("YES");
+
+		/*Verification in Records*/
+		flow.ClickWebElement("CLIENT SERVICE REQUESTS");
+		flow.ExplicitWaitforSpecificText("Show only recurring requests");
+		((JavascriptExecutor) owebdriver).executeScript("window.scrollTo(document.body.scrollHeight, 0)");
+		flow.ClearDropDownField("Select Filter Set(s)");
+		flow.ClearField("Search");
+		flow.SetWebText(InitiateRequestwithFTCompliance.RequestID, "Search");
+		flow.EnterKey("Search");
+		flow.Timeout(4000);
+		flow.VerifyGridText(1, 1, 10, "Pending Request Owner Response");		
+		flow.ClickGridWebElementUsingText(1, InitiateRequestwithFTCompliance.RequestID);
+		flow.SwitchtoRecentChildWindow();
+		flow.ExplicitWaitforSpecificText("Summary");
+		
+		/*Fulfillment Details tab*/
+		flow.ClickWebElement("Fulfillment Details");
+		flow.ExplicitWaitforSpecificText("Final Response");
+		flow.VerifyGridText(1, 1, 1, FunctionalTeam);
+		flow.VerifyGridText(1, 1, 11, Constants.FTStatus3);
+
+		/*Documents*/
+		flow.ClickWebElement("Documents");
+		flow.ExplicitWaitforSpecificText("Category");
+		flow.VerifyTextPresentinGrid(1, "doc15");
+		
+		/*Audit History*/
+		flow.ClickWebElement("Audit History");
+		flow.ExplicitWaitforSpecificText("Activity History");
+		flow.VerifyMouseHoverValuefromICONBasedonIndex(1, "Complete");
+		flow.VerifyGridText(1, 1, 1, "Review Response from Compliance Team");
+		
+		flow.Logout();
+		
+}}
+
+		
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
